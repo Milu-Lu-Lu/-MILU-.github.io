@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小明的電費計算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .step {
+            margin-bottom: 20px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            cursor: pointer;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .btn-summer {
+            background-color: #4a90e2;
+        }
+        .btn-summer:hover {
+            background-color: #357bd8;
+        }
+        .btn-non-summer {
+            background-color: #5cb85c;
+        }
+        .btn-non-summer:hover {
+            background-color: #4cae4c;
+        }
+        .btn-calculate {
+            background-color: #4a90e2;
+        }
+        .btn-calculate:hover {
+            background-color: #357bd8;
+        }
+        .btn-reset {
+            background-color: #777;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn-reset:hover {
+            background-color: #666;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .result {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .result p {
+            margin: 8px 0;
+            font-size: 18px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .price {
+            color: #e53935;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        .rates-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .rates-table th, .rates-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .rates-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>小明的電費計算器</h1>
+        
+        <table class="rates-table">
+            <tr>
+                <th>用電度數級距</th>
+                <th>非夏季電價</th>
+                <th>夏季電價</th>
+            </tr>
+            <tr>
+                <td>120度以下</td>
+                <td>1.68元</td>
+                <td>1.68元</td>
+            </tr>
+            <tr>
+                <td>121度到330度</td>
+                <td>2.16元</td>
+                <td>2.45元</td>
+            </tr>
+            <tr>
+                <td>331度到500度</td>
+                <td>3.03元</td>
+                <td>3.70元</td>
+            </tr>
+            <tr>
+                <td>501度到700度</td>
+                <td>4.14元</td>
+                <td>5.04元</td>
+            </tr>
+            <tr>
+                <td>701度到1000度</td>
+                <td>5.07元</td>
+                <td>6.24元</td>
+            </tr>
+            <tr>
+                <td>1001度以上</td>
+                <td>6.63元</td>
+                <td>8.46元</td>
+            </tr>
+        </table>
+        
+        <div id="step1" class="step">
+            <h2>第一步：選擇電價類型</h2>
+            <div class="buttons">
+                <button id="summerBtn" class="btn-summer">A: 夏季電價 (6-9月)</button>
+                <button id="nonSummerBtn" class="btn-non-summer">B: 非夏季電價</button>
+            </div>
+        </div>
+        
+        <div id="step2" class="step hidden">
+            <h2>第二步：輸入用電度數</h2>
+            <div class="input-group">
+                <input type="number" id="usageInput" placeholder="請輸入用電度數">
+                <button id="calculateBtn" class="btn-calculate">計算</button>
+            </div>
+        </div>
+        
+        <div id="result" class="result hidden">
+            <h2>計算結果</h2>
+            <p>您選擇的是：<span id="seasonResult" class="highlight"></span></p>
+            <p>用電度數：<span id="usageResult" class="highlight"></span> 度</p>
+            <p>電費金額：<span id="priceResult" class="price"></span> 元</p>
+        </div>
+        
+        <button id="resetBtn" class="btn-reset hidden">重新計算</button>
+    </div>
+
+    <script>
+        // 獲取元素
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const summerBtn = document.getElementById('summerBtn');
+        const nonSummerBtn = document.getElementById('nonSummerBtn');
+        const usageInput = document.getElementById('usageInput');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultDiv = document.getElementById('result');
+        const seasonResult = document.getElementById('seasonResult');
+        const usageResult = document.getElementById('usageResult');
+        const priceResult = document.getElementById('priceResult');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // 設置變數
+        let selectedSeason = '';
+        
+        // 選擇季節
+        summerBtn.addEventListener('click', function() {
+            selectedSeason = 'summer';
+            seasonResult.textContent = 'A: 夏季電價 (6-9月)';
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+        });
+        
+        nonSummerBtn.addEventListener('click', function() {
+            selectedSeason = 'non-summer';
+            seasonResult.textContent = 'B: 非夏季電價';
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+        });
+        
+        // 計算電費
+        calculateBtn.addEventListener('click', function() {
+            const usage = parseFloat(usageInput.value);
+            
+            if (!usage || isNaN(usage) || usage <= 0) {
+                alert('請輸入有效的用電度數');
+                return;
+            }
+            
+            let price = 0;
+            
+            // 使用更新後的電價費率計算
+            if (selectedSeason === 'summer') {
+                // 夏季電價 (6-9月)
+                if (usage <= 120) {
+                    price = usage * 1.68;
+                } else if (usage <= 330) {
+                    price = 120 * 1.68 + (usage - 120) * 2.45;
+                } else if (usage <= 500) {
+                    price = 120 * 1.68 + 210 * 2.45 + (usage - 330) * 3.70;
+                } else if (usage <= 700) {
+                    price = 120 * 1.68 + 210 * 2.45 + 170 * 3.70 + (usage - 500) * 5.04;
+                } else if (usage <= 1000) {
+                    price = 120 * 1.68 + 210 * 2.45 + 170 * 3.70 + 200 * 5.04 + (usage - 700) * 6.24;
+                } else {
+                    price = 120 * 1.68 + 210 * 2.45 + 170 * 3.70 + 200 * 5.04 + 300 * 6.24 + (usage - 1000) * 8.46;
+                }
+            } else {
+                // 非夏季電價
+                if (usage <= 120) {
+                    price = usage * 1.68;
+                } else if (usage <= 330) {
+                    price = 120 * 1.68 + (usage - 120) * 2.16;
+                } else if (usage <= 500) {
+                    price = 120 * 1.68 + 210 * 2.16 + (usage - 330) * 3.03;
+                } else if (usage <= 700) {
+                    price = 120 * 1.68 + 210 * 2.16 + 170 * 3.03 + (usage - 500) * 4.14;
+                } else if (usage <= 1000) {
+                    price = 120 * 1.68 + 210 * 2.16 + 170 * 3.03 + 200 * 4.14 + (usage - 700) * 5.07;
+                } else {
+                    price = 120 * 1.68 + 210 * 2.16 + 170 * 3.03 + 200 * 4.14 + 300 * 5.07 + (usage - 1000) * 6.63;
+                }
+            }
+            
+            // 顯示結果
+            usageResult.textContent = usage;
+            priceResult.textContent = Math.round(price);
+            resultDiv.classList.remove('hidden');
+            resetBtn.classList.remove('hidden');
+        });
+        
+        // 重置計算器
+        resetBtn.addEventListener('click', function() {
+            step1.classList.remove('hidden');
+            step2.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+            usageInput.value = '';
+            selectedSeason = '';
+        });
+    </script>
+</body>
+</html>
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
+<body>
+
+<script>
+
+</script>
+</body>
+</html>
